@@ -1,142 +1,248 @@
-# RetroLang
+# RetroLang Advanced Documentation: Functionality & Examples
 
-RetroLang is a simple, retro-inspired programming language built entirely in Lua. It comes with its own lexer, parser, interpreter, and a REPL, making it a lightweight platform for learning and rapid prototyping.
+RetroLang is a retro-inspired programming language built entirely in Lua. It’s designed for simplicity, flexibility, and rapid prototyping, making it an ideal platform for both learning programming concepts and developing small projects. This documentation focuses on the functionality of RetroLang and provides examples of creative projects you can build with it.
+
+---
 
 ## Overview
 
-RetroLang is designed to be straightforward and easy to extend. It features a clear syntax with custom keywords and built-in functions that handle common programming tasks such as I/O, arithmetic, string manipulation, and array handling.
+RetroLang features a custom syntax that emphasizes clarity and ease of use. With its concise keywords and built-in functions, you can quickly get started on projects ranging from simple calculations to interactive text adventures. The language offers:
 
-## Features
+- **Dynamic variable handling** with block scoping.
+- **User-defined functions** for modular code.
+- **Control structures** for conditionals and loops.
+- **Rich built-in functions** for I/O, math, strings, arrays, and more.
 
-- **Simple Syntax:** Uses clear keywords such as `DEC` for variable declaration and `FN` for function definition.
-- **Control Structures:** Supports conditional (`IF`, `ELSEIF`, `ELSE`, `DO`, `STOP`) and looping (`WHILE`, `DO`, `STOP`) constructs.
-- **Expressions & Operators:** Handles arithmetic operations, comparisons, and function calls.
-- **Built-in Functions:** Offers a variety of functions for I/O, math operations, string manipulation, and array operations.
-- **REPL Support:** Comes with an interactive Read-Eval-Print Loop for experimenting with code on the fly.
+---
 
-## File Structure
+## Language Constructs
 
-- **Lexer.lua:**  
-  Tokenizes the source code into a series of tokens. It recognizes keywords, identifiers, numbers, strings, and symbols.
+### Variables and Expressions
 
-- **Parser.lua:**  
-  Parses the tokens from the lexer into an Abstract Syntax Tree (AST) that represents the program's structure.
+Variables are declared using the `DEC` keyword, and expressions support arithmetic, string manipulation, and comparisons. For example:
 
-- **Interpreter.lua:**  
-  Walks the AST to evaluate expressions, execute statements, and manage variable scopes via an environment stack. It also integrates built-in and user-defined functions.
-
-- **main.lua:**  
-  Serves as the entry point for executing RetroLang programs from files. It reads a file provided as a command-line argument, tokenizes, parses, and interprets its contents.
-
-- **repl.rl:**  
-  A REPL (Read-Eval-Print Loop) implemented in RetroLang's own syntax, allowing interactive coding sessions. Type `exit` to quit the REPL.
-
-## Language Syntax and Keywords
-
-RetroLang uses a unique syntax defined by several custom keywords:
-
-- **`DEC`**: Declares a variable.
-- **`FN`**: Declares a function.
-- **`RETURN`**: Returns a value from a function.
-- **`IF`**, **`ELSEIF`**, **`ELSE`**: Control structures for conditional logic.
-- **`DO`**: Marks the start of a block for conditionals and loops.
-- **`WHILE`**: Begins a loop.
-- **`STOP`**: Ends a block (functions, loops, or conditionals).
-- **`IMPORT`**: Reserved for module inclusion (future use).
-
-## Getting Started
-
-### Prerequisites
-
-- **Lua:** Ensure that Lua is installed on your system. You can download it from [Lua.org](https://www.lua.org/).
-
-### Running a RetroLang Program
-
-1. **Create a RetroLang File:**  
-   Write your RetroLang code in a file (e.g., `example.rl`).
-
-2. **Execute the File:**  
-   Run the interpreter from the command line:
-   ```bash
-   lua main.lua example.rl
-   ```
-### Using the REPL
-
-To interact with RetroLang in an interactive mode:
-
-1. **Start the REPL:**  
-   Run the REPL file:
-   ```bash
-   lua main.lua repl.rl
-   ```
-
-2. **Interactive Session:**  
-   Enter your RetroLang code at the prompt. Type `exit` to quit the REPL.
-
-## Example Code
-
-Below is a simple example demonstrating variable declaration, function definition, and output:
 ```retro
 DEC x = 10
 DEC y = 20
+DEC sum = x + y
+print("The sum is: " + tostr(sum))
+```
 
+### Functions
+
+Functions are defined with the `FN` keyword and terminated with `STOP`. Parameters and return values allow for code reuse and abstraction:
+
+```retro
 FN add(a, b)
     RETURN a + b
 STOP
 
-print(add(x, y))
+print("5 + 3 =", add(5, 3))
 ```
 
-## Built-in Functions
+### Control Structures
 
-RetroLang includes several built-in functions to simplify common operations:
+RetroLang includes familiar control structures for decision-making and loops:
 
-- **I/O Functions:**
-  - `print`: Outputs data with a newline.
-  - `write`: Outputs data without a newline.
-  - `get`: Prompts the user for input.
-  - `alert`: Displays an alert message.
+- **Conditional Statements:**
 
-- **String Functions:**
-  - `concat`: Concatenates two strings.
-  - `uppercase`: Converts a string to uppercase.
-  - `lowercase`: Converts a string to lowercase.
-  - `substring`: Extracts a substring.
-  - `split`: Splits a string into an array based on a delimiter.
-  - `tostr`: Converts a value to a string.
+```retro
+DEC temperature = 25
 
-- **Math Functions:**
-  - `tonum`: Converts a value to a number.
-  - `random`: Generates a random number within a specified range.
-  - `floor`: Returns the largest integer less than or equal to a given number.
-  - `ceil`: Returns the smallest integer greater than or equal to a given number.
-  - `abs`: Returns the absolute value of a number.
+IF temperature > 30 DO
+    print("It is hot outside!")
+ELSEIF temperature < 10 DO
+    print("It is cold outside!")
+ELSE
+    print("The weather is moderate.")
+STOP
+```
 
-- **Array Functions:**
-  - `push`: Appends a value to an array.
-  - `pop`: Removes and returns the last element of an array.
-  - `len`: Returns the length of an array.
-  - `reverse`: Reverses the order of elements in an array.
+- **Loops:**
 
-- **Utility Functions:**
-  - `typeof`: Returns the type of a given variable.
-
-## Extending RetroLang
-
-RetroLang is designed to be modular and extensible:
-- **Lexer and Parser:**  
-  Modify `Lexer.lua` and `Parser.lua` to add new tokens, keywords, or syntax.
-- **Interpreter:**  
-  Extend `Interpreter.lua` to incorporate new built-in functions or change runtime behavior.
-
-## Contributing
-
-Contributions are welcome! Feel free to fork the repository, make enhancements, and submit pull requests to improve RetroLang.
-
-## Acknowledgments
-
-RetroLang is inspired by classic programming languages and modern scripting paradigms, aiming to offer a nostalgic yet practical tool for developers and learners alike.
+```retro
+DEC counter = 1
+WHILE counter <= 5 DO
+    print("Count:", counter)
+    counter = counter + 1
+STOP
+```
 
 ---
 
-Enjoy coding with RetroLang!
+## Built-in Functions
+
+RetroLang comes equipped with a robust set of built-in functions that simplify many common tasks:
+
+### I/O Functions
+- **print:** Outputs data with a newline.
+- **write:** Outputs data without a newline.
+- **get:** Prompts the user for input.
+- **alert:** Displays an alert message for debugging.
+
+### String Functions
+- **concat:** Joins two strings.
+- **uppercase / lowercase:** Converts strings to upper or lower case.
+- **substring:** Extracts a part of a string.
+- **split:** Divides a string into an array based on a delimiter.
+- **tostr:** Converts a value to a string.
+
+### Math Functions
+- **tonum:** Converts a value to a number.
+- **random:** Generates a random number within a specified range.
+- **floor / ceil:** Rounds numbers down or up.
+- **abs:** Returns the absolute value.
+
+### Array Functions
+- **push:** Adds an element to the end of an array.
+- **pop:** Removes the last element from an array.
+- **len:** Returns the length of an array.
+- **reverse:** Reverses the order of elements in an array.
+
+### Utility Functions
+- **typeof:** Returns the type of a variable.
+
+These functions allow you to perform a wide range of operations without having to implement complex logic from scratch.
+
+---
+
+## Example Projects
+
+Here are a few ideas of projects you could build with RetroLang:
+
+### 1. Simple Calculator
+
+Create a program that takes two numbers as input and performs basic arithmetic operations.
+
+```retro
+FN calculator()
+    print("Welcome to the Simple Calculator!")
+    print("You can perform the following operations: +, -, *, /")
+
+    // Prompt for the operation
+    DEC operation = get("Enter the operation (+, -, *, /): ")
+
+    // Prompt for the numbers
+    DEC num1_str = get("Enter the first number: ")
+    DEC num2_str = get("Enter the second number: ")
+    DEC num1 = tonum(num1_str)
+    DEC num2 = tonum(num2_str)
+
+    IF operation == "+" DO
+        DEC result = num1 + num2
+        print("The result is:", result)
+    ELSEIF operation == "-" DO
+        DEC result = num1 - num2
+        print("The result is:", result)
+    ELSEIF operation == "*" DO
+        DEC result = num1 * num2
+        print("The result is:", result)
+    ELSEIF operation == "/" DO
+        IF num2 != 0 DO
+            DEC result = num1 / num2
+            print("The result is:", result)
+        ELSE
+            print("Error! Division by zero.")
+        STOP
+    ELSE
+        print("Invalid operation.")
+    STOP
+STOP
+
+calculator()
+```
+
+### 2. Text Adventure Game
+
+Develop a simple text-based adventure where the player makes choices that affect the outcome of the story.
+
+```retro
+print("Welcome to RetroQuest!")
+
+DEC choice = get("You are at a crossroads. Choose left or right: ")
+
+IF choice == "left" DO
+    print("You encounter a friendly wizard who offers you a quest!")
+ELSEIF choice == "right" DO
+    print("You stumble upon a hidden treasure chest!")
+ELSE
+    print("You wander in circles, unsure of where to go.")
+STOP
+```
+
+### 3. Inventory Management
+
+Simulate a basic inventory system where you can add or remove items from an array.
+
+```retro
+print("Inventory Manager")
+
+DEC inventory = []  // Starting with an empty inventory
+
+// Adding items to the inventory
+push(inventory, "Sword")
+push(inventory, "Shield")
+push(inventory, "Potion")
+
+print("Current Inventory: ", inventory)
+
+// Removing an item from the inventory
+DEC removedItem = pop(inventory)
+print("Removed Item: ", removedItem)
+print("Updated Inventory: ", inventory)
+```
+
+### 4. Recursive Function Example
+
+Implement a recursive function, such as calculating Fibonacci numbers.
+
+```retro
+FN fibonacci(n)
+    IF n <= 1 DO
+        RETURN n
+    ELSE
+        RETURN fibonacci(n - 1) + fibonacci(n - 2)
+    STOP
+STOP
+
+DEC num = 10
+print("Fibonacci of ", num, " is ", fibonacci(num))
+```
+
+---
+
+## Extending RetroLang
+
+RetroLang is designed with modularity in mind. You can easily extend its functionality by:
+
+- **Adding New Keywords or Syntax:**  
+  Modify the lexer and parser to introduce new language constructs.
+
+- **Implementing Additional Built-in Functions:**  
+  Expand the built-in function set in the interpreter to cover more complex tasks, such as file I/O, network operations, or advanced math functions.
+
+- **Custom Libraries:**  
+  Integrate new modules that can be imported into your RetroLang programs to provide extended functionality without bloating the core language.
+
+This extensible design makes RetroLang an excellent platform for experimentation and learning about language development.
+
+---
+
+## Contributing
+
+RetroLang is an open platform for experimentation. If you have ideas for new features, improvements, or bug fixes, consider contributing by:
+- Forking the project.
+- Implementing your changes.
+- Submitting a pull request with clear documentation of your contributions.
+
+Every contribution helps expand the possibilities of what you can build with RetroLang.
+
+---
+
+## Acknowledgments
+
+RetroLang draws inspiration from classic programming paradigms and modern scripting practices. Its design philosophy is to provide an accessible, yet powerful, platform for creative coding. Whether you're using it to prototype ideas, build simple games, or explore programming concepts, RetroLang invites you to experiment and innovate.
+
+---
+
+Enjoy exploring RetroLang, and happy coding!
