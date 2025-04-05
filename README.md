@@ -98,6 +98,7 @@ RetroLang comes equipped with a robust set of built-in functions that simplify m
 - **pop:** Removes the last element from an array.
 - **len:** Returns the length of an array.
 - **reverse:** Reverses the order of elements in an array.
+- **set:** Sets an index of a specified array to a value.
 
 ### Utility Functions
 - **typeof:** Returns the type of a variable.
