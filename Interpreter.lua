@@ -241,19 +241,32 @@ function Interpreter.new()
         split = function(args)
             local s = args[1]
             local delim = args[2]
+            
             if type(s) ~= "string" then
                 error("split() first argument must be a string")
             end
             if type(delim) ~= "string" then
                 error("split() second argument must be a string delimiter")
             end
+        
             local result = {}
+            
+            if delim == "" then
+                -- Special case: split into individual characters
+                for i = 1, #s do
+                    result[i] = s:sub(i, i)
+                end
+                return result
+            end
+        
+            -- Build pattern normally for non-empty delimiter
             local pattern = "([^" .. delim .. "]+)"
             for piece in string.gmatch(s, pattern) do
                 table.insert(result, piece)
             end
             return result
         end
+        
     }
 
     ------------------------------------------------
