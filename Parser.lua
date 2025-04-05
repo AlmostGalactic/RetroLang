@@ -47,8 +47,8 @@ function Parser.new(tokens)
         end
         local actual = peek()
         error(errMsg .. " (got " ..
-            (actual and (actual.type .. " " .. tostring(actual.value)) or "EOF") ..
-            ")")
+              (actual and (actual.type .. " " .. tostring(actual.value)) or "EOF") ..
+              ")")
     end
 
     ------------------------------------------------------------------------
@@ -97,7 +97,7 @@ function Parser.new(tokens)
         local expr = parseExpression()
         if not expr then
             error("Unexpected token in parseStatement: " ..
-                (peek() and peek().value or "EOF"))
+                  (peek() and peek().value or "EOF"))
         end
 
         if match("SYMBOL", "=") then
@@ -240,7 +240,6 @@ function Parser.new(tokens)
     -- comparison     -> term (( "==" | "!=" | "<" | "<=" | ">" | ">=" ) term)*
     -- term           -> factor (( "+" | "-" ) factor)*
     -- factor         -> primary (( "*" | "/" ) primary)*
-    -- primary        -> parseBasePrimary then optional function calls or index expressions
     ------------------------------------------------------------------------
     function parseExpression()
         return parseComparison()
@@ -306,7 +305,7 @@ function Parser.new(tokens)
     end
 
     ------------------------------------------------------------------------
-    -- parsePrimary: parse a base expression, then check for function calls or index expressions
+    -- parsePrimary: Parse a base expression then optional function calls or indexing.
     ------------------------------------------------------------------------
     function parsePrimary()
         local expr = parseBasePrimary()
@@ -340,7 +339,7 @@ function Parser.new(tokens)
     end
 
     ------------------------------------------------------------------------
-    -- parseBasePrimary: NUMBER, STRING, IDENTIFIER, or parenthesized expression
+    -- parseBasePrimary: NUMBER, STRING, IDENTIFIER, array literal, or parenthesized expression.
     ------------------------------------------------------------------------
     function parseBasePrimary()
         local t = peek()
@@ -357,6 +356,21 @@ function Parser.new(tokens)
         if t.type == "IDENTIFIER" then
             advance()
             return { type = "Identifier", name = t.value }
+        end
+        -- Array literal: [ expression ("," expression)* ]
+        if t.type == "SYMBOL" and t.value == "[" then
+            advance()  -- consume '['
+            local elements = {}
+            if not check("SYMBOL", "]") then
+                repeat
+                    local expr = parseExpression()
+                    if expr then
+                        table.insert(elements, expr)
+                    end
+                until not match("SYMBOL", ",")
+            end
+            consume("SYMBOL", "]", "Expected ']' after array literal")
+            return { type = "ArrayLiteral", elements = elements }
         end
         if t.type == "SYMBOL" and t.value == "(" then
             advance() -- consume '('
