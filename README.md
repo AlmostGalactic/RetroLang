@@ -133,10 +133,6 @@ RetroLang is designed to be modular and extensible:
 
 Contributions are welcome! Feel free to fork the repository, make enhancements, and submit pull requests to improve RetroLang.
 
-## License
-
-RetroLang is released under the MIT License. See the LICENSE file for more details.
-
 ## Acknowledgments
 
 RetroLang is inspired by classic programming languages and modern scripting paradigms, aiming to offer a nostalgic yet practical tool for developers and learners alike.
