@@ -356,7 +356,7 @@ function Interpreter.new()
             local leftVal  = evaluateExpression(expr.left)
             local rightVal = evaluateExpression(expr.right)
             local op = expr.operator
-
+        
             if op == "+" then
                 return (tonumber(leftVal) or 0) + (tonumber(rightVal) or 0)
             elseif op == "-" then
@@ -377,6 +377,12 @@ function Interpreter.new()
                 return (tonumber(leftVal) or 0) >= (tonumber(rightVal) or 0)
             elseif op == "<=" then
                 return (tonumber(leftVal) or 0) <= (tonumber(rightVal) or 0)
+            elseif op == "AND" then
+                -- For logical AND, if leftVal is false (or nil), return it immediately.
+                return leftVal and rightVal
+            elseif op == "OR" then
+                -- For logical OR, if leftVal is true, return it; otherwise, return rightVal.
+                return leftVal or rightVal
             else
                 error("Unknown binary operator: " .. tostring(op))
             end

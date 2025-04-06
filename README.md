@@ -1,17 +1,18 @@
-# RetroLang : How to program in
+# RetroLang: How to Program In
 
-RetroLang is a retro-inspired programming language built entirely in Lua.
+RetroLang is a retro-inspired programming language built entirely in Lua. It’s designed for simplicity, flexibility, and rapid prototyping—making it an ideal platform for both learning programming concepts and developing small projects. This documentation covers the core functionality of RetroLang and provides examples of creative projects you can build with it.
 
 ---
 
 ## Overview
 
-RetroLang features a custom syntax that emphasizes clarity and ease of use. With its concise keywords and built-in functions, you can quickly get started on projects ranging from simple calculations to interactive text adventures. The language offers:
+RetroLang features a custom syntax that emphasizes clarity and ease of use. With its concise keywords and built-in functions, you can quickly get started on projects ranging from simple calculations to interactive text adventures. Some of its key features include:
 
 - **Dynamic variable handling** with block scoping.
-- **User-defined functions** for modular code.
-- **Control structures** for conditionals and loops.
-- **Rich built-in functions** for I/O, math, strings, arrays, and more.
+- **User-defined functions** for modular, reusable code.
+- **Control structures** for conditionals, loops, and recursive functions.
+- **Rich built-in functions** for I/O, math, string manipulation, and array operations.
+- **Logical operators** (`AND`, `OR`) for compound conditionals.
 
 ---
 
@@ -19,18 +20,19 @@ RetroLang features a custom syntax that emphasizes clarity and ease of use. With
 
 ### Variables and Expressions
 
-Variables are declared using the `DEC` keyword, and expressions support arithmetic, string manipulation, and comparisons. For example:
+Variables are declared using the `DEC` keyword, and expressions support arithmetic, string manipulation, comparisons, and logical operations. For example:
 
 ```retro
 DEC x = 10
 DEC y = 20
 DEC sum = x + y
-print(concat("The sum is: ", tostr(sum)))
+DEC condition = (x == 10) AND (y == 20)
+print("The sum is: " + tostr(sum))
 ```
 
 ### Functions
 
-Functions are defined with the `FN` keyword and terminated with `STOP`. Parameters and return values allow for code reuse and abstraction:
+Functions are defined with the `FN` keyword and terminated with `STOP`. Parameters and return values allow for modular code:
 
 ```retro
 FN add(a, b)
@@ -44,7 +46,7 @@ print("5 + 3 =", add(5, 3))
 
 RetroLang includes familiar control structures for decision-making and loops:
 
-- **Conditional Statements:**
+- **Conditional Statements with Logical Operators:**
 
 ```retro
 DEC temperature = 25
@@ -53,8 +55,10 @@ IF temperature > 30 DO
     print("It is hot outside!")
 ELSEIF temperature < 10 DO
     print("It is cold outside!")
-ELSE
+ELSEIF (temperature >= 10) AND (temperature <= 30) DO
     print("The weather is moderate.")
+ELSE
+    print("Invalid temperature value.")
 STOP
 ```
 
@@ -78,12 +82,12 @@ RetroLang comes equipped with a robust set of built-in functions that simplify m
 - **print:** Outputs data with a newline.
 - **write:** Outputs data without a newline.
 - **get:** Prompts the user for input.
-- **alert:** Displays an alert message for debugging.
+- **alert:** Displays an alert message (useful for debugging).
 
 ### String Functions
 - **concat:** Joins two strings.
 - **uppercase / lowercase:** Converts strings to upper or lower case.
-- **substring:** Extracts a part of a string.
+- **substring:** Extracts part of a string.
 - **split:** Divides a string into an array based on a delimiter.
 - **tostr:** Converts a value to a string.
 
@@ -98,18 +102,18 @@ RetroLang comes equipped with a robust set of built-in functions that simplify m
 - **pop:** Removes the last element from an array.
 - **len:** Returns the length of an array.
 - **reverse:** Reverses the order of elements in an array.
-- **set:** Sets an index of a specified array to a value.
+- **set:** Sets a value at a given index in an array.
 
 ### Utility Functions
 - **typeof:** Returns the type of a variable.
 
-These functions allow you to perform a wide range of operations without having to implement complex logic from scratch.
+These built-ins allow you to perform many operations without writing complex code from scratch.
 
 ---
 
 ## Example Projects
 
-Here are a few ideas of projects you could build with RetroLang:
+Here are a few ideas for projects you can build with RetroLang:
 
 ### 1. Simple Calculator
 
@@ -118,7 +122,7 @@ Create a program that takes two numbers as input and performs basic arithmetic o
 ```retro
 FN calculator()
     print("Welcome to the Simple Calculator!")
-    print("You can perform the following operations: +, -, *, /")
+    print("Operations available: +, -, *, /")
 
     // Prompt for the operation
     DEC operation = get("Enter the operation (+, -, *, /): ")
@@ -155,95 +159,90 @@ calculator()
 
 ### 2. Text Adventure Game
 
-Develop a simple text-based adventure where the player makes choices that affect the outcome of the story.
+Develop a simple text-based adventure where the player makes choices that affect the outcome.
 
 ```retro
 print("Welcome to RetroQuest!")
 
-DEC choice = get("You are at a crossroads. Choose left or right: ")
+DEC choice = get("You're at a crossroads. Choose left or right: ")
 
 IF choice == "left" DO
-    print("You encounter a friendly wizard who offers you a quest!")
+    print("You meet a wise sage who gives you a quest!")
 ELSEIF choice == "right" DO
-    print("You stumble upon a hidden treasure chest!")
+    print("You discover a hidden treasure!")
 ELSE
-    print("You wander in circles, unsure of where to go.")
+    print("You wander aimlessly, unsure of your direction.")
 STOP
 ```
 
 ### 3. Inventory Management
 
-Simulate a basic inventory system where you can add or remove items from an array.
+Simulate an inventory system where you can add or remove items from an array.
 
 ```retro
 print("Inventory Manager")
 
-DEC inventory = []  // Starting with an empty inventory
+DEC inventory = []  // Start with an empty inventory
 
-// Adding items to the inventory
+// Adding items
 push(inventory, "Sword")
 push(inventory, "Shield")
 push(inventory, "Potion")
+print("Current Inventory:", inventory)
 
-print("Current Inventory: ", inventory)
-
-// Removing an item from the inventory
+// Removing an item
 DEC removedItem = pop(inventory)
-print("Removed Item: ", removedItem)
-print("Updated Inventory: ", inventory)
+print("Removed Item:", removedItem)
+print("Updated Inventory:", inventory)
 ```
 
-### 4. Recursive Function Example
+### 4. Logical Operator Demo
 
-Implement a recursive function, such as calculating Fibonacci numbers.
+Demonstrate logical operators in conditionals:
 
 ```retro
-FN fibonacci(n)
-    IF n <= 1 DO
-        RETURN n
-    ELSE
-        RETURN fibonacci(n - 1) + fibonacci(n - 2)
-    STOP
+DEC a = 10
+DEC b = 20
+IF (a < b) AND (b < 30) DO
+    print("Both conditions are true!")
+ELSE
+    print("One or both conditions are false.")
 STOP
-
-DEC num = 10
-print("Fibonacci of ", num, " is ", fibonacci(num))
 ```
 
 ---
 
 ## Extending RetroLang
 
-RetroLang is designed with modularity in mind. You can easily extend its functionality by:
+RetroLang is designed for modularity and experimentation. You can extend its functionality by:
 
 - **Adding New Keywords or Syntax:**  
-  Modify the lexer and parser to introduce new language constructs.
-
+  Modify the lexer and parser to introduce additional constructs.
 - **Implementing Additional Built-in Functions:**  
-  Expand the built-in function set in the interpreter to cover more complex tasks, such as file I/O, network operations, or advanced math functions.
-
-- **Custom Libraries:**  
-  Integrate new modules that can be imported into your RetroLang programs to provide extended functionality without bloating the core language.
-
-This extensible design makes RetroLang an excellent platform for experimentation and learning about language development.
+  Expand your built-in function set (for example, advanced math functions, file I/O, or networking).
+- **Creating Custom Libraries:**  
+  Develop modules that can be imported into RetroLang programs for extended functionality.
 
 ---
 
 ## Contributing
 
-RetroLang is an open platform for experimentation. If you have ideas for new features, improvements, or bug fixes, consider contributing by:
-- Forking the project.
-- Implementing your changes.
-- Submitting a pull request with clear documentation of your contributions.
+RetroLang is an open platform for creative experimentation. If you have ideas for new features, improvements, or bug fixes, consider contributing by:
 
-Every contribution helps expand the possibilities of what you can build with RetroLang.
+- Forking the repository.
+- Implementing your changes.
+- Submitting a pull request with documentation on your contributions.
 
 ---
 
 ## Acknowledgments
 
-RetroLang draws inspiration from classic programming paradigms and modern scripting practices. Its design philosophy is to provide an accessible, yet powerful, platform for creative coding. Whether you're using it to prototype ideas, build simple games, or explore programming concepts, RetroLang invites you to experiment and innovate.
+RetroLang draws inspiration from classic programming paradigms and modern scripting practices. Its design philosophy is to provide an accessible yet powerful platform for creative coding. Whether you're prototyping ideas, building simple games, or exploring programming concepts, RetroLang invites you to experiment and innovate.
 
 ---
 
 Enjoy exploring RetroLang, and happy coding!
+
+---
+
+Feel free to adjust the sections or wording further to match your project's details and style.

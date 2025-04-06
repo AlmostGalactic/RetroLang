@@ -14,6 +14,8 @@ local keywords = {
     ["WHILE"]     = true,
     ["STOP"]      = true,  -- ends any block (functions, if, while)
     ["IMPORT"]    = true,
+    ["AND"]       = true,
+    ["OR"]        = true
 }
 
 local function isAlpha(c)

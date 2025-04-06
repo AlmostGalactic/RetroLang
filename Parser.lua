@@ -242,7 +242,58 @@ function Parser.new(tokens)
     -- factor         -> primary (( "*" | "/" ) primary)*
     ------------------------------------------------------------------------
     function parseExpression()
-        return parseComparison()
+        return parseLogicalOr()
+    end
+    
+    function parseLogicalOr()
+        local expr = parseLogicalAnd()
+        while check("KEYWORD", "OR") do
+            advance()  -- consume the "OR" token
+            local right = parseLogicalAnd()
+            expr = {
+                type = "BinaryExpression",
+                operator = "OR",
+                left = expr,
+                right = right
+            }
+        end
+        return expr
+    end
+    
+    function parseLogicalAnd()
+        local expr = parseComparison()
+        while check("KEYWORD", "AND") do
+            advance()  -- consume the "AND" token
+            local right = parseComparison()
+            expr = {
+                type = "BinaryExpression",
+                operator = "AND",
+                left = expr,
+                right = right
+            }
+        end
+        return expr
+    end
+    
+    function parseComparison()
+        local expr = parseTerm()
+        while true do
+            if check("SYMBOL", "==") or check("SYMBOL", "!=")
+               or check("SYMBOL", "<") or check("SYMBOL", ">")
+               or check("SYMBOL", "<=") or check("SYMBOL", ">=") then
+                local op = advance().value
+                local right = parseTerm()
+                expr = {
+                    type = "BinaryExpression",
+                    operator = op,
+                    left = expr,
+                    right = right
+                }
+            else
+                break
+            end
+        end
+        return expr
     end
 
     function parseComparison()
