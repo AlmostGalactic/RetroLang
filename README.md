@@ -1,6 +1,6 @@
 # RetroLang : How to program in
 
-RetroLang is a retro-inspired programming language built entirely in Lua. It’s designed for simplicity, flexibility, and rapid prototyping, making it an ideal platform for both learning programming concepts and developing small projects. This documentation focuses on the functionality of RetroLang and provides examples of creative projects you can build with it.
+RetroLang is a retro-inspired programming language built entirely in Lua.
 
 ---
 
