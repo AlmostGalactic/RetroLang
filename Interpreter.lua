@@ -189,6 +189,18 @@ function Interpreter.new()
             end
             return string.lower(str)
         end,
+
+        char = function(args)
+            if args[1] then
+                return string.char(args[1])
+            end
+        end,
+
+        getAscii = function(args)
+            if args[1] then
+                return string.byte(args[1])
+            end
+        end,
     
         substring = function(args)
             local str = args[1]
