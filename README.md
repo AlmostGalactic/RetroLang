@@ -25,7 +25,7 @@ Variables are declared using the `DEC` keyword, and expressions support arithmet
 DEC x = 10
 DEC y = 20
 DEC sum = x + y
-print("The sum is: " + tostr(sum))
+print(concat("The sum is: ", tostr(sum)))
 ```
 
 ### Functions
