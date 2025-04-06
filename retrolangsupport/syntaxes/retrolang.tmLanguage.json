@@ -3,6 +3,12 @@
 	"name": "Retro Lang",
 	"patterns": [
 		{
+			"include": "#comments"
+		},
+		{
+			"include": "#functionCalls"
+		},
+		{
 			"include": "#keywords"
 		},
 		{
@@ -35,6 +41,27 @@
 		"numbers": {
 			"name": "constant.numeric.retrolang",
 			"match": "\\b\\d+(\\.\\d+)?\\b"
+		},
+		"comments": {
+			"patterns": [
+				{
+					"name": "comment.line.double-slash.retrolang",
+					"match": "//.*$"
+				},
+				{
+					"name": "comment.block.retrolang",
+					"begin": "/\\*",
+					"end": "\\*/"
+				}
+			]
+		},
+		"functionCalls": {
+			"patterns": [
+				{
+					"name": "entity.name.function.retrolang",
+					"match": "\\b([A-Za-z_][A-Za-z0-9_]*)\\s*(?=\\()"
+				}
+			]
 		}
 	},
 	"scopeName": "source.rl"
