@@ -1,0 +1,25 @@
+{
+  "name": "retrolangsupport",
+  "displayName": "RetroLang Support",
+  "description": "Adds Syntax Highlighting for the programming language RetroLang",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.99.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "retrolang",
+      "aliases": ["Retro Lang", "retrolang"],
+      "extensions": [".rl"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "retrolang",
+      "scopeName": "source.rl",
+      "path": "./syntaxes/retrolang.tmLanguage.json"
+    }]
+  }
+}

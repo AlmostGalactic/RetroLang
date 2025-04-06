@@ -1,0 +1,41 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Retro Lang",
+	"patterns": [
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#strings"
+		},
+		{
+			"include": "#numbers"
+		}
+	],
+	"repository": {
+		"keywords": {
+			"patterns": [
+				{
+					"name": "keyword.control.retrolang",
+					"match": "\\b(IF|WHILE|STOP|RETURN|FN|DEC|DO|ELSE|ELSEIF|true|false)\\b"
+				}
+			]
+		},
+		"strings": {
+			"name": "string.quoted.double.retrolang",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.retrolang",
+					"match": "\\\\."
+				}
+			]
+		},
+		"numbers": {
+			"name": "constant.numeric.retrolang",
+			"match": "\\b\\d+(\\.\\d+)?\\b"
+		}
+	},
+	"scopeName": "source.rl"
+}
