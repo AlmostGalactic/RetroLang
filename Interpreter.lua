@@ -314,13 +314,25 @@ function Interpreter.new()
 
         elseif etype == "StringLiteral" then
             return expr.value
-        
+            
         elseif etype == "ArrayLiteral" then
             local arr = {}
             for i, element in ipairs(expr.elements) do
                 arr[i] = evaluateExpression(element)
             end
             return arr
+
+        elseif etype == "ObjectLiteral" then
+            local obj = {}
+            for key, valueExpr in pairs(expr.properties) do
+                obj[key] = evaluateExpression(valueExpr)
+            end
+            return obj
+
+        elseif etype == "MemberExpression" then
+            local obj = evaluateExpression(expr.object)
+            return obj[expr.property]
+
         
         elseif etype == "IndexExpression" then
             local obj = evaluateExpression(expr.object)
@@ -334,22 +346,51 @@ function Interpreter.new()
             return getVar(expr.name)
         
         elseif etype == "CallExpression" then
-            local callee = expr.callee
             local argVals = {}
             for _, argExpr in ipairs(expr.arguments) do
                 table.insert(argVals, evaluateExpression(argExpr))
             end
-            if callee.type == "Identifier" then
-                local fnName = callee.name
-                if builtIns[fnName] then
-                    return builtIns[fnName](argVals)
-                elseif userFunctions[fnName] then
-                    return callUserFunction(userFunctions[fnName], argVals)
+        
+            local calleeValue = nil
+            if expr.callee.type == "Identifier" then
+                local name = expr.callee.name
+                if builtIns[name] then
+                    -- Call built-in functions with argVals as a table.
+                    calleeValue = builtIns[name]
+                    return calleeValue(argVals)
+                elseif userFunctions[name] then
+                    return callUserFunction(userFunctions[name], argVals)
                 else
-                    error("Undefined function '"..fnName.."'")
+                    calleeValue = getVar(name)
                 end
             else
-                error("CallExpression callee must be an identifier in this simple example.")
+                calleeValue = evaluateExpression(expr.callee)
+            end
+        
+            if type(calleeValue) == "function" then
+                -- For non-built-in functions, unpack the arguments.
+                return calleeValue(table.unpack(argVals))
+            else
+                error("CallExpression callee is not a function: " .. tostring(calleeValue))
+            end
+        
+        elseif etype == "FunctionLiteral" then
+            return function(...)
+                local args = {...}
+                pushEnv()
+                for i, param in ipairs(expr.params) do
+                    declareVar(param, args[i])
+                end
+                local returnValue = nil
+                for _, stmt in ipairs(expr.body) do
+                    local r = executeStatement(stmt)
+                    if r and r.returned then
+                        returnValue = r.value
+                        break
+                    end
+                end
+                popEnv()
+                return returnValue
             end
         
         elseif etype == "BinaryExpression" then

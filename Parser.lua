@@ -3,10 +3,7 @@
 local Parser = {}
 
 function Parser.new(tokens)
-    local self = {
-        tokens  = tokens,
-        current = 1
-    }
+    local self = { tokens = tokens, current = 1 }
 
     ------------------------------------------------------------------------
     -- Basic token-handling helpers
@@ -46,24 +43,23 @@ function Parser.new(tokens)
             return advance()
         end
         local actual = peek()
-        error(errMsg .. " (got " ..
-              (actual and (actual.type .. " " .. tostring(actual.value)) or "EOF") ..
-              ")")
+        error(errMsg .. " (got " .. (actual and (actual.type .. " " .. tostring(actual.value)) or "EOF") .. ")")
     end
 
     ------------------------------------------------------------------------
-    -- Forward Declarations
+    -- Forward declarations
     ------------------------------------------------------------------------
     local parseProgram, parseStatement, parseBlock
     local parseExpression, parseComparison, parseTerm, parseFactor, parsePrimary
-    local parseBasePrimary
+    local parseBasePrimary, parseFunctionLiteral
+    local parseLogicalOr, parseLogicalAnd
     local parseVarDeclaration, parseFunctionDeclaration
     local parseReturnStatement, parseIfStatement, parseWhileStatement
 
     ------------------------------------------------------------------------
     -- PROGRAM -> ( statement )*
     ------------------------------------------------------------------------
-    function parseProgram()
+    parseProgram = function()
         local statements = {}
         while not isAtEnd() do
             table.insert(statements, parseStatement())
@@ -74,7 +70,7 @@ function Parser.new(tokens)
     ------------------------------------------------------------------------
     -- STATEMENT
     ------------------------------------------------------------------------
-    function parseStatement()
+    parseStatement = function()
         local t = peek()
         if not t then return nil end
 
@@ -96,8 +92,7 @@ function Parser.new(tokens)
 
         local expr = parseExpression()
         if not expr then
-            error("Unexpected token in parseStatement: " ..
-                  (peek() and peek().value or "EOF"))
+            error("Unexpected token in parseStatement: " .. (peek() and peek().value or "EOF"))
         end
 
         if match("SYMBOL", "=") then
@@ -116,24 +111,20 @@ function Parser.new(tokens)
     end
 
     ------------------------------------------------------------------------
-    -- varDeclaration -> "DEC" IDENTIFIER "=" expression
+    -- VAR DECLARATION -> "DEC" IDENTIFIER "=" expression
     ------------------------------------------------------------------------
-    function parseVarDeclaration()
+    parseVarDeclaration = function()
         consume("KEYWORD", "DEC", "Expected 'DEC'")
         local nameTok = consume("IDENTIFIER", nil, "Expected variable name")
         consume("SYMBOL", "=", "Expected '=' after variable name")
         local initExpr = parseExpression()
-        return {
-            type = "VarDeclaration",
-            name = nameTok.value,
-            initializer = initExpr
-        }
+        return { type = "VarDeclaration", name = nameTok.value, initializer = initExpr }
     end
 
     ------------------------------------------------------------------------
-    -- functionDeclaration -> "FN" IDENTIFIER "(" paramList? ")" block "STOP"
+    -- FUNCTION DECLARATION -> "FN" IDENTIFIER "(" paramList? ")" block "STOP"
     ------------------------------------------------------------------------
-    function parseFunctionDeclaration()
+    parseFunctionDeclaration = function()
         consume("KEYWORD", "FN", "Expected 'FN'")
         local nameTok = consume("IDENTIFIER", nil, "Expected function name")
         consume("SYMBOL", "(", "Expected '(' after function name")
@@ -147,18 +138,33 @@ function Parser.new(tokens)
         consume("SYMBOL", ")", "Expected ')' after parameters")
         local body = parseBlock()
         consume("KEYWORD", "STOP", "Expected 'STOP' after function body")
-        return {
-            type = "FunctionDeclaration",
-            name = nameTok.value,
-            params = params,
-            body = body
-        }
+        return { type = "FunctionDeclaration", name = nameTok.value, params = params, body = body }
     end
 
     ------------------------------------------------------------------------
-    -- returnStatement -> "RETURN" expression?
+    -- FUNCTION LITERAL -> "FN" "(" paramList? ")" block "STOP"
+    -- Allows functions to be defined inline as expressions.
     ------------------------------------------------------------------------
-    function parseReturnStatement()
+    parseFunctionLiteral = function()
+        consume("KEYWORD", "FN", "Expected 'FN' for function literal")
+        consume("SYMBOL", "(", "Expected '(' after FN")
+        local params = {}
+        if not check("SYMBOL", ")") then
+            repeat
+                local p = consume("IDENTIFIER", nil, "Expected parameter name")
+                table.insert(params, p.value)
+            until not match("SYMBOL", ",")
+        end
+        consume("SYMBOL", ")", "Expected ')' after parameters")
+        local body = parseBlock()
+        consume("KEYWORD", "STOP", "Expected 'STOP' after function literal")
+        return { type = "FunctionLiteral", params = params, body = body }
+    end
+
+    ------------------------------------------------------------------------
+    -- RETURN STATEMENT -> "RETURN" expression?
+    ------------------------------------------------------------------------
+    parseReturnStatement = function()
         consume("KEYWORD", "RETURN", "Expected 'RETURN'")
         if check("IDENTIFIER") or check("NUMBER") or check("STRING") or check("SYMBOL", "(") then
             local expr = parseExpression()
@@ -169,14 +175,13 @@ function Parser.new(tokens)
     end
 
     ------------------------------------------------------------------------
-    -- ifStatement -> "IF" expression "DO" block (ELSEIF expression "DO" block)* (ELSE block)? "STOP"
+    -- IF STATEMENT -> "IF" expression "DO" block (ELSEIF expression "DO" block)* (ELSE block)? "STOP"
     ------------------------------------------------------------------------
-    function parseIfStatement()
+    parseIfStatement = function()
         consume("KEYWORD", "IF", "Expected 'IF'")
         local condExpr = parseExpression()
         consume("KEYWORD", "DO", "Expected 'DO' after IF condition")
         local thenBranch = parseBlock()
-
         local elseIfs = {}
         while check("KEYWORD", "ELSEIF") do
             advance()  -- consume ELSEIF
@@ -185,44 +190,32 @@ function Parser.new(tokens)
             local elseifBranch = parseBlock()
             table.insert(elseIfs, { condition = elseifCondition, branch = elseifBranch })
         end
-
         local elseBranch = nil
         if check("KEYWORD", "ELSE") then
             advance()  -- consume ELSE
             elseBranch = parseBlock()
         end
-
         consume("KEYWORD", "STOP", "Expected 'STOP' after IF statement")
-        return {
-            type = "IfStatement",
-            condition = condExpr,
-            thenBranch = thenBranch,
-            elseIfs = elseIfs,
-            elseBranch = elseBranch
-        }
+        return { type = "IfStatement", condition = condExpr, thenBranch = thenBranch, elseIfs = elseIfs, elseBranch = elseBranch }
     end
 
     ------------------------------------------------------------------------
-    -- whileStatement -> "WHILE" expression "DO" block "STOP"
+    -- WHILE STATEMENT -> "WHILE" expression "DO" block "STOP"
     ------------------------------------------------------------------------
-    function parseWhileStatement()
+    parseWhileStatement = function()
         consume("KEYWORD", "WHILE", "Expected 'WHILE'")
         local condExpr = parseExpression()
         consume("KEYWORD", "DO", "Expected 'DO' after WHILE condition")
         local body = parseBlock()
         consume("KEYWORD", "STOP", "Expected 'STOP' after WHILE loop")
-        return {
-            type = "WhileStatement",
-            condition = condExpr,
-            body = body
-        }
+        return { type = "WhileStatement", condition = condExpr, body = body }
     end
 
     ------------------------------------------------------------------------
-    -- block -> ( statement )*
-    -- stops if it sees "STOP", "ELSE", or "ELSEIF"
+    -- BLOCK -> ( statement )*
+    -- Stops when it sees "STOP", "ELSE", or "ELSEIF"
     ------------------------------------------------------------------------
-    function parseBlock()
+    parseBlock = function()
         local statements = {}
         while not isAtEnd() do
             if check("KEYWORD", "STOP") or check("KEYWORD", "ELSE") or check("KEYWORD", "ELSEIF") then
@@ -236,59 +229,44 @@ function Parser.new(tokens)
     ------------------------------------------------------------------------
     -- EXPRESSIONS
     --
-    -- expression     -> comparison
-    -- comparison     -> term (( "==" | "!=" | "<" | "<=" | ">" | ">=" ) term)*
-    -- term           -> factor (( "+" | "-" ) factor)*
-    -- factor         -> primary (( "*" | "/" ) primary)*
+    -- expression -> comparison
+    -- comparison -> term (( "==" | "!=" | "<" | "<=" | ">" | ">=" ) term)*
+    -- term -> factor (( "+" | "-" ) factor)*
+    -- factor -> primary (( "*" | "/" ) primary)*
     ------------------------------------------------------------------------
-    function parseExpression()
+    parseExpression = function()
         return parseLogicalOr()
     end
-    
-    function parseLogicalOr()
+
+    parseLogicalOr = function ()
         local expr = parseLogicalAnd()
         while check("KEYWORD", "OR") do
-            advance()  -- consume the "OR" token
+            advance()  -- Consume the OR token
             local right = parseLogicalAnd()
-            expr = {
-                type = "BinaryExpression",
-                operator = "OR",
-                left = expr,
-                right = right
-            }
+            expr = { type = "BinaryExpression", operator = "OR", left = expr, right = right }
         end
         return expr
     end
-    
-    function parseLogicalAnd()
+
+    parseLogicalAnd = function ()
         local expr = parseComparison()
         while check("KEYWORD", "AND") do
-            advance()  -- consume the "AND" token
+            advance()  -- Consume the AND token
             local right = parseComparison()
-            expr = {
-                type = "BinaryExpression",
-                operator = "AND",
-                left = expr,
-                right = right
-            }
+            expr = { type = "BinaryExpression", operator = "AND", left = expr, right = right }
         end
         return expr
     end
-    
-    function parseComparison()
+
+    parseComparison = function()
         local expr = parseTerm()
         while true do
             if check("SYMBOL", "==") or check("SYMBOL", "!=")
-               or check("SYMBOL", "<") or check("SYMBOL", ">")
-               or check("SYMBOL", "<=") or check("SYMBOL", ">=") then
+              or check("SYMBOL", "<") or check("SYMBOL", ">")
+              or check("SYMBOL", "<=") or check("SYMBOL", ">=") then
                 local op = advance().value
                 local right = parseTerm()
-                expr = {
-                    type = "BinaryExpression",
-                    operator = op,
-                    left = expr,
-                    right = right
-                }
+                expr = { type = "BinaryExpression", operator = op, left = expr, right = right }
             else
                 break
             end
@@ -296,39 +274,13 @@ function Parser.new(tokens)
         return expr
     end
 
-    function parseComparison()
-        local expr = parseTerm()
-        while true do
-            if check("SYMBOL", "==") or check("SYMBOL", "!=")
-               or check("SYMBOL", "<") or check("SYMBOL", ">")
-               or check("SYMBOL", "<=") or check("SYMBOL", ">=") then
-                local op = advance().value
-                local right = parseTerm()
-                expr = {
-                    type = "BinaryExpression",
-                    operator = op,
-                    left = expr,
-                    right = right
-                }
-            else
-                break
-            end
-        end
-        return expr
-    end
-
-    function parseTerm()
+    parseTerm = function()
         local expr = parseFactor()
         while true do
             if check("SYMBOL", "+") or check("SYMBOL", "-") then
                 local op = advance().value
                 local right = parseFactor()
-                expr = {
-                    type = "BinaryExpression",
-                    operator = op,
-                    left = expr,
-                    right = right
-                }
+                expr = { type = "BinaryExpression", operator = op, left = expr, right = right }
             else
                 break
             end
@@ -336,18 +288,13 @@ function Parser.new(tokens)
         return expr
     end
 
-    function parseFactor()
+    parseFactor = function()
         local expr = parsePrimary()
         while true do
             if check("SYMBOL", "*") or check("SYMBOL", "/") then
                 local op = advance().value
                 local right = parsePrimary()
-                expr = {
-                    type = "BinaryExpression",
-                    operator = op,
-                    left = expr,
-                    right = right
-                }
+                expr = { type = "BinaryExpression", operator = op, left = expr, right = right }
             else
                 break
             end
@@ -356,9 +303,10 @@ function Parser.new(tokens)
     end
 
     ------------------------------------------------------------------------
-    -- parsePrimary: Parse a base expression then optional function calls or indexing.
+    -- parsePrimary: Parse a base expression then check for function calls,
+    -- index expressions, or member access.
     ------------------------------------------------------------------------
-    function parsePrimary()
+    parsePrimary = function()
         local expr = parseBasePrimary()
         while true do
             if match("SYMBOL", "(") then
@@ -369,19 +317,14 @@ function Parser.new(tokens)
                     until not match("SYMBOL", ",")
                 end
                 consume("SYMBOL", ")", "Expected ')' after function call")
-                expr = {
-                    type = "CallExpression",
-                    callee = expr,
-                    arguments = args
-                }
+                expr = { type = "CallExpression", callee = expr, arguments = args }
             elseif match("SYMBOL", "[") then
                 local indexExpr = parseExpression()
                 consume("SYMBOL", "]", "Expected ']' after index expression")
-                expr = {
-                    type = "IndexExpression",
-                    object = expr,
-                    index = indexExpr
-                }
+                expr = { type = "IndexExpression", object = expr, index = indexExpr }
+            elseif match("SYMBOL", ".") then
+                local memberToken = consume("IDENTIFIER", nil, "Expected member name after '.'")
+                expr = { type = "MemberExpression", object = expr, property = memberToken.value }
             else
                 break
             end
@@ -390,9 +333,10 @@ function Parser.new(tokens)
     end
 
     ------------------------------------------------------------------------
-    -- parseBasePrimary: NUMBER, STRING, IDENTIFIER, array literal, or parenthesized expression.
+    -- parseBasePrimary: Handles NUMBER, STRING, IDENTIFIER, object/array literals,
+    -- or parenthesized expressions.
     ------------------------------------------------------------------------
-    function parseBasePrimary()
+    parseBasePrimary = function()
         local t = peek()
         if not t then return nil end
 
@@ -408,20 +352,34 @@ function Parser.new(tokens)
             advance()
             return { type = "Identifier", name = t.value }
         end
-        -- Array literal: [ expression ("," expression)* ]
+        if t.type == "KEYWORD" and t.value == "FN" then
+            return parseFunctionLiteral()
+        end
         if t.type == "SYMBOL" and t.value == "[" then
-            advance()  -- consume '['
-            local elements = {}
-            if not check("SYMBOL", "]") then
-                repeat
-                    local expr = parseExpression()
-                    if expr then
-                        table.insert(elements, expr)
-                    end
-                until not match("SYMBOL", ",")
+            advance() -- consume '['
+            -- Check for object literal: if next token is IDENTIFIER and token after is "=".
+            if check("IDENTIFIER") and self.tokens[self.current+1] and self.tokens[self.current+1].value == "=" then
+                local properties = {}
+                while not check("SYMBOL", "]") do
+                    local keyToken = consume("IDENTIFIER", nil, "Expected property name")
+                    consume("SYMBOL", "=", "Expected '=' after property name")
+                    local valueExpr = parseExpression()
+                    properties[keyToken.value] = valueExpr
+                    if not match("SYMBOL", ",") then break end
+                end
+                consume("SYMBOL", "]", "Expected ']' after object literal")
+                return { type = "ObjectLiteral", properties = properties }
+            else
+                local elements = {}
+                if not check("SYMBOL", "]") then
+                    repeat
+                        local element = parseExpression()
+                        table.insert(elements, element)
+                    until not match("SYMBOL", ",")
+                end
+                consume("SYMBOL", "]", "Expected ']' after array literal")
+                return { type = "ArrayLiteral", elements = elements }
             end
-            consume("SYMBOL", "]", "Expected ']' after array literal")
-            return { type = "ArrayLiteral", elements = elements }
         end
         if t.type == "SYMBOL" and t.value == "(" then
             advance() -- consume '('
