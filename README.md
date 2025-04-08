@@ -1,5 +1,3 @@
-Below is your updated README.md text with the new language features integrated. Instead of using triple‐backticks, each code sample is indented to distinguish it from the regular text.
-
 --------------------------------------------------
 
 Below is an improved version of your README that reflects the current changes in RetroLang. In this version, the language now uses:
