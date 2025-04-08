@@ -1,16 +1,3 @@
---------------------------------------------------
-
-Below is an improved version of your README that reflects the current changes in RetroLang. In this version, the language now uses:
-
-• DEC for variable declarations  
-• FN … STOP for functions  
-• DO to begin blocks in IF and WHILE statements (with ELSEIF and ELSE branches also ending with STOP)  
-• Logical operators (AND, OR) for compound conditions  
-• Support for objects, arrays, and member access  
-• Module import functionality (IMPORT returns the module’s value via its top‐level RETURN)
-
----
-
 # RetroLang: How to Program In
 
 RetroLang is a retro-inspired programming language built entirely in Lua. It’s designed for simplicity, flexibility, and rapid prototyping—making it an ideal platform for both learning programming concepts and developing small projects. This documentation covers the core functionality of RetroLang and provides examples of creative projects you can build with it.
