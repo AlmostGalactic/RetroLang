@@ -189,13 +189,13 @@ function Interpreter.new()
             end
             return string.lower(str)
         end,
-
+    
         char = function(args)
             if args[1] then
                 return string.char(args[1])
             end
         end,
-
+    
         getAscii = function(args)
             if args[1] then
                 return string.byte(args[1])
@@ -207,7 +207,7 @@ function Interpreter.new()
             local start = args[2] or 1
             local len = args[3] or (#str - start + 1)
             if type(str) ~= "string" then
-                error("substring() expects a string first argument.")
+                error("substring() expects a string as first argument.")
             end
             return string.sub(str, start, start + len - 1)
         end,
@@ -264,21 +264,18 @@ function Interpreter.new()
             local result = {}
             
             if delim == "" then
-                -- Special case: split into individual characters
                 for i = 1, #s do
                     result[i] = s:sub(i, i)
                 end
                 return result
             end
         
-            -- Build pattern normally for non-empty delimiter
             local pattern = "([^" .. delim .. "]+)"
             for piece in string.gmatch(s, pattern) do
                 table.insert(result, piece)
             end
             return result
         end
-        
     }
 
     ------------------------------------------------
@@ -308,32 +305,31 @@ function Interpreter.new()
     ------------------------------------------------
     local function evaluateExpression(expr)
         local etype = expr.type
-
+    
         if etype == "NumericLiteral" then
             return expr.value
-
+    
         elseif etype == "StringLiteral" then
             return expr.value
-            
+    
         elseif etype == "ArrayLiteral" then
             local arr = {}
             for i, element in ipairs(expr.elements) do
                 arr[i] = evaluateExpression(element)
             end
             return arr
-
+    
         elseif etype == "ObjectLiteral" then
             local obj = {}
             for key, valueExpr in pairs(expr.properties) do
                 obj[key] = evaluateExpression(valueExpr)
             end
             return obj
-
+    
         elseif etype == "MemberExpression" then
             local obj = evaluateExpression(expr.object)
             return obj[expr.property]
-
-        
+    
         elseif etype == "IndexExpression" then
             local obj = evaluateExpression(expr.object)
             local idx = evaluateExpression(expr.index)
@@ -341,23 +337,45 @@ function Interpreter.new()
                 error("Cannot index a non-table: " .. tostring(obj))
             end
             return obj[idx]
-        
+    
         elseif etype == "Identifier" then
             return getVar(expr.name)
-        
+    
+        elseif etype == "ImportExpression" then
+            local filePath = expr.filename
+            local f = io.open(filePath, "r")
+            if not f then
+                error("Could not open import file: " .. filePath)
+            end
+            local code = f:read("*a")
+            f:close()
+            local tokens = Lexer.tokenize(code)
+            local parser = Parser.new(tokens)
+            local ast = parser:parse()
+            if ast.type ~= "Program" then
+                error("AST root must be a Program node in import file")
+            end
+            local moduleReturn = nil
+            for _, s in ipairs(ast.body) do
+                local r = executeStatement(s)
+                if r and r.returned then
+                    moduleReturn = r.value
+                    break
+                end
+            end
+            return moduleReturn
+    
         elseif etype == "CallExpression" then
             local argVals = {}
             for _, argExpr in ipairs(expr.arguments) do
                 table.insert(argVals, evaluateExpression(argExpr))
             end
-        
             local calleeValue = nil
             if expr.callee.type == "Identifier" then
                 local name = expr.callee.name
                 if builtIns[name] then
-                    -- Call built-in functions with argVals as a table.
                     calleeValue = builtIns[name]
-                    return calleeValue(argVals)
+                    return calleeValue(argVals)  -- Built-ins expect args as a table.
                 elseif userFunctions[name] then
                     return callUserFunction(userFunctions[name], argVals)
                 else
@@ -366,14 +384,12 @@ function Interpreter.new()
             else
                 calleeValue = evaluateExpression(expr.callee)
             end
-        
             if type(calleeValue) == "function" then
-                -- For non-built-in functions, unpack the arguments.
                 return calleeValue(table.unpack(argVals))
             else
                 error("CallExpression callee is not a function: " .. tostring(calleeValue))
             end
-        
+    
         elseif etype == "FunctionLiteral" then
             return function(...)
                 local args = {...}
@@ -392,12 +408,11 @@ function Interpreter.new()
                 popEnv()
                 return returnValue
             end
-        
+    
         elseif etype == "BinaryExpression" then
             local leftVal  = evaluateExpression(expr.left)
             local rightVal = evaluateExpression(expr.right)
             local op = expr.operator
-        
             if op == "+" then
                 return (tonumber(leftVal) or 0) + (tonumber(rightVal) or 0)
             elseif op == "-" then
@@ -419,15 +434,13 @@ function Interpreter.new()
             elseif op == "<=" then
                 return (tonumber(leftVal) or 0) <= (tonumber(rightVal) or 0)
             elseif op == "AND" then
-                -- For logical AND, if leftVal is false (or nil), return it immediately.
                 return leftVal and rightVal
             elseif op == "OR" then
-                -- For logical OR, if leftVal is true, return it; otherwise, return rightVal.
                 return leftVal or rightVal
             else
                 error("Unknown binary operator: " .. tostring(op))
             end
-        
+    
         else
             error("Unknown expression type: " .. tostring(etype))
         end
@@ -442,6 +455,10 @@ function Interpreter.new()
         if stype == "VarDeclaration" then
             local initVal = evaluateExpression(stmt.initializer)
             declareVar(stmt.name, initVal)
+        
+        elseif stype == "ImportStatement" then
+            -- If IMPORT is used as a statement, simply evaluate its expression.
+            return evaluateExpression(stmt.expression)
         
         elseif stype == "AssignmentStatement" then
             local val = evaluateExpression(stmt.value)

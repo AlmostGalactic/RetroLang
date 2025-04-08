@@ -50,9 +50,9 @@ function Parser.new(tokens)
     -- Forward declarations
     ------------------------------------------------------------------------
     local parseProgram, parseStatement, parseBlock
-    local parseExpression, parseComparison, parseTerm, parseFactor, parsePrimary
-    local parseBasePrimary, parseFunctionLiteral
-    local parseLogicalOr, parseLogicalAnd
+    local parseExpression, parseLogicalOr, parseLogicalAnd, parseComparison
+    local parseTerm, parseFactor, parsePrimary
+    local parseBasePrimary, parseFunctionLiteral, parseImportExpression
     local parseVarDeclaration, parseFunctionDeclaration
     local parseReturnStatement, parseIfStatement, parseWhileStatement
 
@@ -88,6 +88,10 @@ function Parser.new(tokens)
         end
         if check("KEYWORD", "WHILE") then
             return parseWhileStatement()
+        end
+        if check("KEYWORD", "IMPORT") then
+            -- Allow IMPORT as a statement.
+            return { type = "ExpressionStatement", expression = parseImportExpression() }
         end
 
         local expr = parseExpression()
@@ -162,6 +166,16 @@ function Parser.new(tokens)
     end
 
     ------------------------------------------------------------------------
+    -- IMPORT EXPRESSION -> "IMPORT" STRING
+    -- Allows module loading as an expression that returns the module's value.
+    ------------------------------------------------------------------------
+    parseImportExpression = function()
+        consume("KEYWORD", "IMPORT", "Expected 'IMPORT'")
+        local fileTok = consume("STRING", nil, "Expected filename as string after IMPORT")
+        return { type = "ImportExpression", filename = fileTok.value }
+    end
+
+    ------------------------------------------------------------------------
     -- RETURN STATEMENT -> "RETURN" expression?
     ------------------------------------------------------------------------
     parseReturnStatement = function()
@@ -229,7 +243,9 @@ function Parser.new(tokens)
     ------------------------------------------------------------------------
     -- EXPRESSIONS
     --
-    -- expression -> comparison
+    -- expression -> logicalOr
+    -- logicalOr -> logicalAnd ( "OR" logicalAnd )*
+    -- logicalAnd -> comparison ( "AND" comparison )*
     -- comparison -> term (( "==" | "!=" | "<" | "<=" | ">" | ">=" ) term)*
     -- term -> factor (( "+" | "-" ) factor)*
     -- factor -> primary (( "*" | "/" ) primary)*
@@ -238,20 +254,20 @@ function Parser.new(tokens)
         return parseLogicalOr()
     end
 
-    parseLogicalOr = function ()
+    parseLogicalOr = function()
         local expr = parseLogicalAnd()
         while check("KEYWORD", "OR") do
-            advance()  -- Consume the OR token
+            advance()  -- consume "OR"
             local right = parseLogicalAnd()
             expr = { type = "BinaryExpression", operator = "OR", left = expr, right = right }
         end
         return expr
     end
 
-    parseLogicalAnd = function ()
+    parseLogicalAnd = function()
         local expr = parseComparison()
         while check("KEYWORD", "AND") do
-            advance()  -- Consume the AND token
+            advance()  -- consume "AND"
             local right = parseComparison()
             expr = { type = "BinaryExpression", operator = "AND", left = expr, right = right }
         end
@@ -334,11 +350,11 @@ function Parser.new(tokens)
 
     ------------------------------------------------------------------------
     -- parseBasePrimary: Handles NUMBER, STRING, IDENTIFIER, object/array literals,
-    -- or parenthesized expressions.
+    -- function literals, import expressions, or parenthesized expressions.
     ------------------------------------------------------------------------
     parseBasePrimary = function()
         local t = peek()
-        if not t then return nil end
+        if not t then error("Unexpected end of input in expression") end
 
         if t.type == "NUMBER" then
             advance()
@@ -355,17 +371,28 @@ function Parser.new(tokens)
         if t.type == "KEYWORD" and t.value == "FN" then
             return parseFunctionLiteral()
         end
+        if t.type == "KEYWORD" and t.value == "IMPORT" then
+            return parseImportExpression()
+        end
         if t.type == "SYMBOL" and t.value == "[" then
             advance() -- consume '['
-            -- Check for object literal: if next token is IDENTIFIER and token after is "=".
-            if check("IDENTIFIER") and self.tokens[self.current+1] and self.tokens[self.current+1].value == "=" then
+            local isObject = false
+            if check("IDENTIFIER") then
+                local nextT = self.tokens[self.current+1]
+                if nextT and nextT.type == "SYMBOL" and nextT.value == "=" then
+                    isObject = true
+                end
+            end
+
+            if isObject then
                 local properties = {}
                 while not check("SYMBOL", "]") do
                     local keyToken = consume("IDENTIFIER", nil, "Expected property name")
                     consume("SYMBOL", "=", "Expected '=' after property name")
                     local valueExpr = parseExpression()
                     properties[keyToken.value] = valueExpr
-                    if not match("SYMBOL", ",") then break end
+                    if check("SYMBOL", "]") then break end
+                    match("SYMBOL", ",")
                 end
                 consume("SYMBOL", "]", "Expected ']' after object literal")
                 return { type = "ObjectLiteral", properties = properties }
@@ -387,7 +414,7 @@ function Parser.new(tokens)
             consume("SYMBOL", ")", "Expected ')' after expression")
             return expr
         end
-        return nil
+        error("Unexpected token in parseBasePrimary: " .. (t.value or "EOF"))
     end
 
     ------------------------------------------------------------------------

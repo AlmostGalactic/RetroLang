@@ -23,7 +23,7 @@
 			"patterns": [
 				{
 					"name": "keyword.control.retrolang",
-					"match": "\\b(IF|WHILE|STOP|RETURN|FN|DEC|DO|ELSE|ELSEIF|true|false|AND|OR)\\b"
+					"match": "\\b(IF|WHILE|STOP|RETURN|FN|DEC|DO|ELSE|ELSEIF|true|false|AND|OR|IMPORT)\\b"
 				}
 			]
 		},

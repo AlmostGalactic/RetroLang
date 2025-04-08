@@ -1,10 +1,15 @@
-Below is an improved version of your README.md that reflects the current changes in RetroLang. In this version, the language now uses:
+Below is your updated README.md text with the new language features integrated. Instead of using triple‐backticks, each code sample is indented to distinguish it from the regular text.
+
+--------------------------------------------------
+
+Below is an improved version of your README that reflects the current changes in RetroLang. In this version, the language now uses:
 
 • DEC for variable declarations  
 • FN … STOP for functions  
-• DO to begin blocks in IF and WHILE statements, with ELSEIF and ELSE branches also ending with STOP  
+• DO to begin blocks in IF and WHILE statements (with ELSEIF and ELSE branches also ending with STOP)  
 • Logical operators (AND, OR) for compound conditions  
 • Support for objects, arrays, and member access  
+• Module import functionality (IMPORT returns the module’s value via its top‐level RETURN)
 
 ---
 
@@ -19,10 +24,11 @@ RetroLang is a retro-inspired programming language built entirely in Lua. It’s
 RetroLang features a custom syntax that emphasizes clarity and ease of use. With its concise keywords and rich set of built-in functions, you can quickly get started on projects ranging from simple calculations to interactive text adventures. Key features include:
 
 • Dynamic variable handling with block scoping  
-• User-defined functions with the FN keyword and termination via STOP  
-• Control structures for conditionals, loops, and recursion  
+• User-defined functions defined with FN and ended with STOP  
+• Control structures for conditionals, loops, and recursion (using DO to begin blocks and STOP to end them)  
 • Built-in support for objects (using array-like syntax for object literals and the dot operator for member access)  
-• Logical operators AND and OR for compound conditionals
+• Logical operators AND and OR for compound conditionals  
+• Module import functionality via IMPORT, which executes a module file and returns its value
 
 ---
 
@@ -31,7 +37,7 @@ RetroLang features a custom syntax that emphasizes clarity and ease of use. With
 ### Variables and Expressions
 
 Variables are declared using the DEC keyword. Expressions support arithmetic, string manipulation, comparisons, and logical operations. For example:
-```
+```go
     DEC x = 10
     DEC y = 20
     DEC sum = x + y
@@ -40,22 +46,22 @@ Variables are declared using the DEC keyword. Expressions support arithmetic, st
 ```
 ### Functions
 
-Functions are defined with FN and terminated with STOP. Parameters and return values allow for modular, reusable code. For example:
-```
+Functions are defined using FN and terminated with STOP. Parameters and return values allow for modular, reusable code. For example:
+```go
     FN add(a, b)
         RETURN a + b
     STOP
 
     print("5 + 3 =", add(5, 3))
 ```
-Functions can also be defined as values and assigned to variables or used as object properties.
+Functions can also be defined as first-class values and assigned to variables or used as object properties.
 
 ### Control Structures
 
 RetroLang supports familiar control structures:
 
 **Conditional Statements:**
-```
+```go
     DEC temperature = 25
 
     IF temperature > 30 DO
@@ -69,7 +75,7 @@ RetroLang supports familiar control structures:
     STOP
 ```
 **Loops:**
-```
+```go
     DEC counter = 1
     WHILE counter <= 5 DO
         print("Count:", counter)
@@ -78,18 +84,18 @@ RetroLang supports familiar control structures:
 ```
 ### Objects and Arrays
 
-RetroLang supports both array literals and object literals. An array literal is written using square brackets with comma-separated values. For example:
-```
+RetroLang supports both array and object literals. An array literal is written using square brackets with comma-separated values. For example:
+```go
     DEC list = [ 1, 2, 3, 4 ]
 ```
-An object literal is written similarly, but with key-value pairs using an equals sign:
-```
+An object literal uses the same brackets but defines key-value pairs using an equals sign. For example:
+```go
     DEC obj = [ test = 123, name = "RetroLang" ]
     print(obj.test)   // Outputs 123
     print(obj.name)   // Outputs RetroLang
 ```
 Functions can also be stored as object properties:
-```
+```go
     DEC obj = [
         tempfunc = FN (name)
             print(name)
@@ -99,8 +105,8 @@ Functions can also be stored as object properties:
 ```
 ### Logical Operators
 
-RetroLang supports the logical operators AND and OR for compound conditions:
-```
+RetroLang now supports the logical operators AND and OR for compound conditions:
+```go
     DEC a = 10
     DEC b = 20
     IF (a < b) AND (b < 30) DO
@@ -109,11 +115,23 @@ RetroLang supports the logical operators AND and OR for compound conditions:
         print("One or both conditions are false.")
     STOP
 ```
+### Module Import
+
+RetroLang supports Lua-style modules via the IMPORT keyword. When you write an import expression, the specified file is loaded, executed, and the first top-level RETURN encountered is returned as the module’s value. For example, given a module file (e.g., module.rl) with:
+```go
+    DEC value = 123
+    RETURN value
+```
+you can import and use the module like this:
+```go
+    DEC mod = IMPORT "module.rl"
+    print(mod)   // Outputs: 123
+```
 ---
 
 ## Built-in Functions
 
-RetroLang comes with a robust set of built-in functions to simplify common tasks:
+RetroLang comes with a robust set of built-in functions:
 
 **I/O Functions:**  
 • print – Outputs data with a newline  
@@ -144,7 +162,7 @@ RetroLang comes with a robust set of built-in functions to simplify common tasks
 **Utility Functions:**  
 • typeof – Returns the type of a variable
 
-These functions allow you to perform many operations without writing complex logic from scratch.
+These built-in functions allow you to perform many operations without writing complex code from scratch.
 
 ---
 
@@ -153,7 +171,7 @@ These functions allow you to perform many operations without writing complex log
 ### 1. Simple Calculator
 
 Create a program that takes two numbers as input and performs basic arithmetic operations.
-```
+```go
     FN calculator()
         print("Welcome to the Simple Calculator!")
         print("Operations available: +, -, *, /")
@@ -193,7 +211,7 @@ Create a program that takes two numbers as input and performs basic arithmetic o
 ### 2. Text Adventure Game
 
 Develop a simple text-based adventure where the player makes choices that affect the outcome.
-```
+```go
     print("Welcome to RetroQuest!")
     
     DEC choice = get("You're at a crossroads. Choose left or right: ")
@@ -209,7 +227,7 @@ Develop a simple text-based adventure where the player makes choices that affect
 ### 3. Inventory Management
 
 Simulate an inventory system where you can add or remove items from an array.
-```
+```go
     print("Inventory Manager")
     
     DEC inventory = []  // Start with an empty inventory
@@ -228,7 +246,7 @@ Simulate an inventory system where you can add or remove items from an array.
 ### 4. Logical Operator Demo
 
 Demonstrate logical operators in conditionals:
-```
+```go
     DEC a = 10
     DEC b = 20
     IF (a < b) AND (b < 30) DO
@@ -240,7 +258,7 @@ Demonstrate logical operators in conditionals:
 ### 5. Object and Function Properties
 
 Showcase objects, member access, and functions as object properties:
-```
+```go
     DEC obj = [
         test = 123,
         tempfunc = FN (name)
@@ -250,6 +268,19 @@ Showcase objects, member access, and functions as object properties:
     print(obj.test)           // Outputs 123
     obj.tempfunc("User")      // Outputs "User"
 ```
+
+### 6. Module Import
+
+Demonstrate Lua-style module usage by importing a module and using its returned value. Suppose there is a module file named module.rl containing:
+```go
+    DEC value = 123
+    RETURN value
+```
+You can import and use it like this:
+```go
+    DEC mod = IMPORT "module.rl"
+    print(mod)   // Outputs: 123
+```
 ---
 
 ## Extending RetroLang
@@ -257,7 +288,7 @@ Showcase objects, member access, and functions as object properties:
 RetroLang is designed for modularity and experimentation. You can extend its functionality by:
 
 • Adding new keywords or syntax (modify the lexer and parser).  
-• Implementing additional built-in functions (e.g., advanced math, file I/O).  
+• Implementing additional built-in functions (e.g., advanced math functions, file I/O).  
 • Creating custom libraries that can be imported into RetroLang programs.
 
 ---
@@ -273,7 +304,3 @@ RetroLang is an open platform for creative experimentation. If you have ideas fo
 RetroLang draws inspiration from classic programming paradigms and modern scripting practices. Its design philosophy is to provide an accessible yet powerful platform for creative coding. Whether you're prototyping ideas, building simple games, or exploring programming concepts, RetroLang invites you to experiment and innovate.
 
 ---
-
-Enjoy exploring RetroLang, and happy coding!
-  
-Feel free to adjust sections or wording further to match your project's details and style.
