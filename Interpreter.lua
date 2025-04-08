@@ -126,6 +126,12 @@ function Interpreter.new()
             end
             return io.read()
         end,
+
+        mod = function(args)
+            local arg1 = args[1] or 0
+            local arg2 = args[2] or 0
+            return arg1 % arg2
+        end,
         
         push = function(args)
             local arr = args[1]

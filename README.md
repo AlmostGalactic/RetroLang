@@ -136,6 +136,7 @@ RetroLang comes with a robust set of built-in functions:
 • random – Generates a random number within a specified range  
 • floor / ceil – Rounds numbers down or up  
 • abs – Returns the absolute value
+• mod – Returns the modulos of the two arguments
 
 **Array Functions:**  
 • push – Adds an element to the end of an array  
