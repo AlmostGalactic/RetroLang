@@ -51,16 +51,24 @@ DEC string = [
         STOP
         RETURN finish
     STOP,
-    tableconcat = FN (table, sep)
-        IF typeof(table) != "table" DO
-            RETURN "Argument needs to be a table, else, use concat function. USAGE: concat(arg1, arg2)"
-        STOP
-        DEC finish = ""
-        DEC indx = 0
-        WHILE indx < len(table) DO
-            indx = indx + 1
-            finish = concat(finish, concat(table[indx], sep))
-        STOP
-        RETURN finish
-    STOP
+    table = [
+        concat = FN (table, sep)
+            IF typeof(table) != "table" DO
+                RETURN "Argument needs to be a table, else, use concat function. USAGE: concat(arg1, arg2)"
+            STOP
+            DEC finish = ""
+            DEC indx = 0
+            WHILE indx < len(table) DO
+                indx = indx + 1
+                IF indx == len(table) DO
+                    finish = concat(finish, table[indx])
+                ELSE
+                    finish = concat(finish, concat(table[indx], sep))
+                STOP
+            STOP
+            RETURN finish
+        STOP,
+    ]
+    
+
 ] RETURN string

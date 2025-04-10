@@ -157,7 +157,7 @@ function Interpreter.new()
                 error("pop() argument must be an array/table")
             end
             local lastVal = arr[where]
-            arr[#arr] = nil
+            arr[where] = nil
             return lastVal
         end,
     
@@ -254,6 +254,18 @@ function Interpreter.new()
         typeof = function(args)
             local val = args[1]
             return type(val)
+        end,
+
+        inTable = function(args)
+            local val = args[1]
+            local arr = args[2]
+            if type(arr) ~= "table" then
+                error("inTable() second argument must be an array/table")
+            end
+            for _, v in ipairs(arr) do
+                if v == val then return true end
+            end
+            return false
         end,
     
         split = function(args)

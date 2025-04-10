@@ -144,6 +144,7 @@ RetroLang comes with a robust set of built-in functions:
 • len – Returns the length of an array  
 • reverse – Reverses the order of elements in an array  
 • set – Sets a value at a given index in an array
+• inTable – Takes 2 inputs and checks if the first input is in the second input  | Second input is table only
 
 **Utility Functions:**  
 • typeof – Returns the type of a variable
