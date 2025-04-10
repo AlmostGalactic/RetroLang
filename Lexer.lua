@@ -131,6 +131,16 @@ function Lexer.tokenize(code)
             local strValue = code:sub(startPos, pos - 1)
             advance()  -- skip closing quote
             addToken("STRING", strValue)
+        
+        elseif c == "'" then
+            advance()  -- skip opening quote
+            local startPos = pos
+            while currentChar() ~= "'" and currentChar() do
+                advance()
+            end
+            local strValue = code:sub(startPos, pos - 1)
+            advance()  -- skip closing quote
+            addToken("STRING", strValue)
 
         elseif (c == '=' or c == '!' or c == '<' or c == '>') and nextC == '=' then
             addToken("SYMBOL", c .. nextC)

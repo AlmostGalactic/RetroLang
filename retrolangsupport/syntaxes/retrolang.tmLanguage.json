@@ -28,13 +28,28 @@
 			]
 		},
 		"strings": {
-			"name": "string.quoted.double.retrolang",
-			"begin": "\"",
-			"end": "\"",
 			"patterns": [
 				{
-					"name": "constant.character.escape.retrolang",
-					"match": "\\\\."
+					"name": "string.quoted.double.retrolang",
+					"begin": "\"",
+					"end": "\"",
+					"patterns": [
+						{
+							"name": "constant.character.escape.retrolang",
+							"match": "\\\\."
+						}
+					]
+				},
+				{
+					"name": "string.quoted.single.retrolang",
+					"begin": "'",
+					"end": "'",
+					"patterns": [
+						{
+							"name": "constant.character.escape.retrolang",
+							"match": "\\\\."
+						}
+					]
 				}
 			]
 		},
