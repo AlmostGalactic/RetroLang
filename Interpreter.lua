@@ -5,6 +5,7 @@ local Parser      = require("./Parser")
 
 function Interpreter.new()
     local self = {}
+    local debug
 
     ------------------------------------------------
     -- ENVIRONMENT STACK (for variables)
@@ -58,30 +59,37 @@ function Interpreter.new()
     local function prettyPrint(value, indent, visited)
         indent = indent or 0
         visited = visited or {}
-    
+
         if type(value) ~= "table" then
-            print(string.rep(" ", indent) .. tostring(value))
+            io.write(tostring(value))
             return
         end
-    
+
         if visited[value] then
-            print(string.rep(" ", indent) .. "*recursive*")
+            io.write("{<circular reference>}")
             return
         end
+
         visited[value] = true
-    
+        io.write("{\n")
         for k, v in pairs(value) do
-            local prefix = string.rep(" ", indent) .. tostring(k) .. ": "
-            if type(v) == "table" then
-                print(prefix)
-                prettyPrint(v, indent + 2, visited)
-            else
-                print(prefix .. tostring(v))
-            end
+            io.write(string.rep("  ", indent + 1))
+            io.write("[", tostring(k), "] = ")
+            prettyPrint(v, indent + 1, visited)
+            io.write(",\n")
         end
+        io.write(string.rep("  ", indent), "}")
+        visited[value] = nil
     end
 
     local builtIns = {
+        debug = function(args)
+            print("WARNING this displays codes ast for debugging purposes only.")
+            print("AST:")
+            print("=================")
+            prettyPrint(debug)
+        end,
+
         execute = function(args)
             if args[1] then
                 local interp = Interpreter.new()
@@ -554,6 +562,8 @@ function Interpreter.new()
         if ast.type ~= "Program" then
             error("AST root must be a Program node")
         end
+
+        debug = ast
 
         if #envStack == 0 then
             envStack = {}
