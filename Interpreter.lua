@@ -130,7 +130,7 @@ function Interpreter.new()
         
         get = function(args)
             if args[1] then
-                print(args[1])
+                io.write(args[1])
             end
             return io.read()
         end,
